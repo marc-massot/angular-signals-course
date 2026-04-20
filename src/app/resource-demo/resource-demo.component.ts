@@ -1,6 +1,5 @@
 import {Component, effect, inject, resource, signal} from "@angular/core";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
-import {environment} from "../../environments/environment";
 import {Lesson} from "../models/lesson.model";
 
 
@@ -12,8 +11,6 @@ import {Lesson} from "../models/lesson.model";
 })
 export class ResourceDemoComponent {
 
-  env = environment;
-
   search = signal<string>('');
 
   lessons = resource<Lesson[], {search:string}>({
@@ -22,7 +19,7 @@ export class ResourceDemoComponent {
     }),
     loader: async ({params, abortSignal}) => {
       const response = await
-        fetch(`${this.env.apiRoot}/search-lessons?query=${params.search}&courseId=18`,
+        fetch(`/api/search-lessons?query=${params.search}&courseId=18`,
           {
             signal: abortSignal
           });

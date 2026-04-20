@@ -3,15 +3,11 @@ import {Lesson} from "../models/lesson.model";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import {firstValueFrom} from "rxjs";
 import {GetLessonsResponse} from "../models/get-lessons.response";
-import {environment} from "../../environments/environment";
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class LessonsService {
-
-  env = environment;
 
   http = inject(HttpClient);
 
@@ -41,7 +37,7 @@ export class LessonsService {
     lessonId:string,
     changes:Partial<Lesson>): Promise<Lesson> {
     const saveLesson$ = this.http.put<Lesson>(
-      `${this.env.apiRoot}/lessons/${lessonId}`,
+      `/api/lessons/${lessonId}`,
       changes
     )
     return firstValueFrom(saveLesson$);

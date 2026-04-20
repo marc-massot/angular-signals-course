@@ -1,5 +1,4 @@
 import {Injectable} from "@angular/core";
-import {environment} from "../../environments/environment";
 import {Course} from "../models/course.model";
 
 
@@ -8,16 +7,14 @@ import {Course} from "../models/course.model";
 })
 export class CoursesServiceWithFetch {
 
-  env = environment;
-
   async loadAllCourses(): Promise<Course[]> {
-    const response = await fetch(`${this.env.apiRoot}/courses`);
+    const response = await fetch('/api/courses');
     const payload = await response.json();
     return payload.courses;
   }
 
   async createCourse(course: Partial<Course>): Promise<Course> {
-    const response = await fetch(`${this.env.apiRoot}/courses`, {
+    const response = await fetch('/api/courses', {
       method: "POST",
       headers: {
         'Content-Type': "application/json"
@@ -29,7 +26,7 @@ export class CoursesServiceWithFetch {
 
   async saveCourse(courseId: string,
                    changes: Partial<Course>): Promise<Course> {
-    const response = await fetch(`${this.env.apiRoot}/courses/${courseId}`, {
+    const response = await fetch(`/api/courses/${courseId}`, {
       method: "PUT",
       headers: {
         'Content-Type': "application/json"
@@ -40,7 +37,7 @@ export class CoursesServiceWithFetch {
   }
 
   async deleteCourse(courseId:string):Promise<void> {
-    await fetch(`${this.env.apiRoot}/courses/${courseId}`, {
+    await fetch(`/api/courses/${courseId}`, {
       method: "DELETE"
     })
   }

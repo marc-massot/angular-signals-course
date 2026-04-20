@@ -1,6 +1,5 @@
 import {computed, effect, inject, Injectable, signal} from "@angular/core";
 import {User} from "../models/user.model";
-import {environment} from "../../environments/environment";
 import {Router} from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import {firstValueFrom} from "rxjs";
@@ -42,7 +41,7 @@ export class AuthService {
   }
 
   async login(email:string, password:string): Promise<User> {
-    const login$ = this.http.post<User>(`${environment.apiRoot}/login`, {
+    const login$ = this.http.post<User>('/api/login', {
       email,
       password});
     const user = await firstValueFrom(login$);
