@@ -1,5 +1,5 @@
 import {
-  afterNextRender, ChangeDetectorRef,
+  afterNextRender, ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -23,11 +23,7 @@ import {LoadingService} from "../loading/loading.service";
 
 @Component({
     selector: 'home',
-    imports: [
-        MatTabGroup,
-        MatTab,
-        CoursesCardListComponent
-    ],
+    imports: [ MatTabGroup, MatTab, CoursesCardListComponent ],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })
@@ -36,6 +32,32 @@ export class HomeComponent {
   #courses = signal<Course[]>([]);
 
   coursesService = inject(CoursesService);
+
+  async loadCourses() {
+    try {
+      const courses = await this.coursesService.loadAllCourses();
+      this.#courses.set(courses.sort(sortCoursesBySeqNo));
+    }
+    catch(err) {
+      this.messageService.showMessage(`Error loading courses!`, "error");
+      console.error(err);
+    }
+  }
+
+  constructor() {
+    this.loadCourses()
+      .then(() => console.log(`All courses loaded:`, this.#courses()));
+
+    effect(() => {
+      console.log(`beginnersList: `, this.beginnersList())
+    })
+
+    effect(() => {
+      console.log(`Beginner courses: `, this.beginnerCourses())
+      console.log(`Advanced courses: `, this.advancedCourses())
+    });
+
+  }
 
   dialog = inject(MatDialog);
 
@@ -55,35 +77,6 @@ export class HomeComponent {
 
   beginnersList = viewChild<CoursesCardListComponent>("beginnersList");
 
-  constructor() {
-
-    effect(() => {
-      console.log(`beginnersList: `, this.beginnersList())
-    })
-
-    effect(() => {
-      console.log(`Beginner courses: `, this.beginnerCourses())
-      console.log(`Advanced courses: `, this.advancedCourses())
-    });
-
-    this.loadCourses()
-      .then(() => console.log(`All courses loaded:`, this.#courses()));
-  }
-
-  async loadCourses() {
-    try {
-      const courses = await this.coursesService.loadAllCourses();
-      this.#courses.set(courses.sort(sortCoursesBySeqNo));
-    }
-    catch(err) {
-      this.messageService.showMessage(
-        `Error loading courses!`,
-        "error"
-      );
-      console.error(err);
-    }
-  }
-
   onCourseUpdated(updatedCourse: Course) {
     const courses = this.#courses();
     const newCourses = courses.map(course => (
@@ -101,27 +94,50 @@ export class HomeComponent {
       this.#courses.set(newCourses);
     }
     catch (err) {
-      console.error(err)
-      alert(`Error deleting course.`)
+      console.error(err);
+      this.messageService.showMessage(`Error deleting course.`, "error");
     }
   }
 
   async onAddCourse() {
-    const newCourse = await openEditCourseDialog(
+    const courseProps = await openEditCourseDialog(
       this.dialog,
       {
-        mode: "create",
         title: "Create New Course"
       }
     )
-    if (!newCourse) {
+    if (!courseProps) {
       return;
     }
-    const newCourses = [
-      ...this.#courses(),
-      newCourse
-    ];
-    this.#courses.set(newCourses);
+    try {
+      const newCourse = await this.coursesService.createCourse(courseProps);
+      this.#courses.set([...this.#courses(), newCourse]);
+    }
+    catch (err) {
+      console.error(err);
+      this.messageService.showMessage(`Error creating the course!`, "error");
+    }
+  }
+
+  async onEditCourse(course: Course) {
+    const courseProps = await openEditCourseDialog(
+      this.dialog,
+      {
+        title: "Update Existing Course",
+        course
+      }
+    )
+    if (!courseProps) {
+      return;
+    }
+    try {
+      const updatedCourse = await this.coursesService.saveCourse(course.id, courseProps);
+      this.onCourseUpdated(updatedCourse);
+    }
+    catch (err) {
+      console.error(err);
+      this.messageService.showMessage(`Failed to save the course.`, "error");
+    }
   }
 
   onToObservableExample() {

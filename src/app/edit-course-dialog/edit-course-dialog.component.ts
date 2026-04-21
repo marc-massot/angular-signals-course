@@ -2,7 +2,6 @@ import {Component, effect, inject, signal} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {Course} from "../models/course.model";
 import {EditCourseDialogData} from "./edit-course-dialog.data.model";
-import {CoursesService} from "../services/courses.service";
 import {LoadingIndicatorComponent} from "../loading/loading.component";
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {CourseCategoryComboboxComponent} from "../course-category-combobox/course-category-combobox.component";
@@ -11,11 +10,7 @@ import {firstValueFrom} from "rxjs";
 
 @Component({
     selector: 'edit-course-dialog',
-    imports: [
-        LoadingIndicatorComponent,
-        ReactiveFormsModule,
-        CourseCategoryComboboxComponent
-    ],
+    imports: [ LoadingIndicatorComponent, ReactiveFormsModule, CourseCategoryComboboxComponent ],
     templateUrl: './edit-course-dialog.component.html',
     styleUrl: './edit-course-dialog.component.scss'
 })
@@ -32,8 +27,6 @@ export class EditCourseDialogComponent {
     longDescription: [''],
     iconUrl: ['']
   });
-
-  courseService = inject(CoursesService);
 
   category = signal<CourseCategory>("BEGINNER");
 
@@ -54,42 +47,11 @@ export class EditCourseDialogComponent {
     this.dialogRef.close();
   }
 
-  async onSave() {
-    const courseProps =
-      this.form.value as Partial<Course>;
+  onSave() {
+    const courseProps = this.form.value as Partial<Course>;
     courseProps.category = this.category();
-    if (this.data?.mode === "update") {
-      await this.saveCourse(this.data?.course!.id, courseProps);
-    }
-    else if (this.data?.mode === "create") {
-      await this.createCourse(courseProps);
-    }
+    this.dialogRef.close(courseProps);
   }
-
-  async createCourse(course: Partial<Course>) {
-    try {
-      const newCourse = await this.courseService.createCourse(course);
-      this.dialogRef.close(newCourse);
-    }
-    catch (err) {
-      console.error(err);
-      alert(`Error creating the course.`)
-    }
-
-  }
-
-  async saveCourse(courseId:string, changes: Partial<Course>) {
-    try {
-      const updatedCourse =
-        await this.courseService.saveCourse(courseId, changes);
-      this.dialogRef.close(updatedCourse);
-    }
-    catch (err) {
-      console.error(err);
-      alert(`Failed to save the course.`);
-    }
-  }
-
 
 }
 
