@@ -24,7 +24,7 @@ export class LessonsService {
       params = params.set("query", query);
     }
     const lessons$ = this.http.get<GetLessonsResponse>(
-      `${this.env.apiRoot}/search-lessons`,
+      '/api/search-lessons',
       {
         params
       }

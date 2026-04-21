@@ -1,5 +1,5 @@
 import {inject, Injectable} from "@angular/core";
-import { HttpClient, HttpContext } from "@angular/common/http";
+import {HttpClient, HttpContext } from "@angular/common/http";
 import {firstValueFrom, Observable} from "rxjs";
 import {Course} from "../models/course.model";
 import {GetCoursesResponse} from "../models/get-courses.response";
@@ -45,6 +45,5 @@ export class CoursesService {
       this.http.delete(`/api/courses/${courseId}`);
     return firstValueFrom(delete$);
   }
-
-
+  
 }
